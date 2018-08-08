@@ -1,10 +1,10 @@
 #!/bin/bash
 # Lookups may not work for VPN / tun0
-IP_LOOKUP="$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"  
+IP_LOOKUP="$(ip route get 9.9.9.9 | awk '{ print $NF; exit }')"  
 IPv6_LOOKUP="$(ip -6 route get 2001:4860:4860::8888 | awk '{for(i=1;i<=NF;i++) if ($i=="src") print $(i+1)}')"  
 
 # Just hard code these to your docker server's LAN IP if lookups aren't working
-IP="${IP:-$IP_LOOKUP}"  # use $IP, if set, otherwise IP_LOOKUP
+IP="192.168.0.147"  # use $IP, if set, otherwise IP_LOOKUP
 IPv6="${IPv6:-$IPv6_LOOKUP}"  # use $IPv6, if set, otherwise IP_LOOKUP
 
 # Default of directory you run this from, update to where ever.
@@ -19,10 +19,13 @@ docker run -d \
     -p 67:67/udp \
     -p 80:80 \
     -p 443:443 \
-    -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
-    -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
+    -v "/home/dika/git/docker-pi-hole/etc/hosts:/etc/hosts" \
+    -v "${DOCKER_CONFIGS}/etc/dnsmasq.d/:/etc/dnsmasq.d/" \
+    -v "${DOCKER_CONFIGS}/etc/pihole:/etc/pihole/" \
     -e ServerIP="${IP}" \
     -e ServerIPv6="${IPv6}" \
+    -e DNS1="9.9.9.9" \
+    -e DNS2="1.1.1.1" \
     --restart=unless-stopped \
     pihole/pihole:latest
 
